@@ -31,6 +31,7 @@ class MyApp extends StatelessWidget {
       home: Scaffold(
         body: ListView(
           children: [
+            Appbar(),
             ImageSection(),
             TitleSection(),
             ButtonSection(),
@@ -139,50 +140,8 @@ class ImageSection extends StatelessWidget {
 
 const sidebarColor = Color(0xFFF6A00C);
 
-class LeftSide extends StatelessWidget {
-  const LeftSide({Key? key}) : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-        width: 200,
-        child: Container(
-            color: sidebarColor,
-            child: Column(
-              children: [
-                WindowTitleBarBox(child: MoveWindow()),
-                Expanded(child: Container())
-              ],
-            )));
-  }
-}
-
 const backgroundStartColor = Color(0xFFFFD500);
 const backgroundEndColor = Color(0xFFF6A00C);
-
-class RightSide extends StatelessWidget {
-  const RightSide({Key? key}) : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [backgroundStartColor, backgroundEndColor],
-              stops: [0.0, 1.0]),
-        ),
-        child: Column(children: [
-          WindowTitleBarBox(
-            child: Row(
-              children: [Expanded(child: MoveWindow()), const WindowButtons()],
-            ),
-          )
-        ]),
-      ),
-    );
-  }
-}
 
 final buttonColors = WindowButtonColors(
     iconNormal: const Color(0xFF805306),
@@ -197,16 +156,27 @@ final closeButtonColors = WindowButtonColors(
     iconNormal: const Color(0xFF805306),
     iconMouseOver: Colors.white);
 
-class WindowButtons extends StatelessWidget {
-  const WindowButtons({Key? key}) : super(key: key);
+
+class Appbar extends StatelessWidget {
+  const Appbar({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        MinimizeWindowButton(colors: buttonColors),
-        MaximizeWindowButton(colors: buttonColors),
-        CloseWindowButton(colors: closeButtonColors),
-      ],
+    return Container(
+      color: Colors.amber[50],
+      height: 32,
+      child: Row(
+        children: [
+          Expanded(
+            child: WindowTitleBarBox(child: MoveWindow(
+              child: Center(child: Text("Test Flutter"),)
+            ),),
+          ),
+          MinimizeWindowButton(colors: buttonColors),
+          MaximizeWindowButton(colors: buttonColors),
+          CloseWindowButton(colors: closeButtonColors),
+        ],
+      ),
     );
   }
 }
