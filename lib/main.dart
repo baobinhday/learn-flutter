@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
-
+import 'package:flutter_app/features/layout_demo/layout_demo.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(MyApp());
 
   doWhenWindowReady(() {
     final win = appWindow;
-    const initialSize = Size(600, 650);
+    const initialSize = Size(800, 650);
     win.minSize = initialSize;
     win.size = initialSize;
     win.alignment = Alignment.center;
     win.title = "Custom window with Flutter";
-    // win.close();
-    // win.maximize();
-    // win.minimize();
     win.show();
   });
 }
@@ -26,117 +24,95 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter layout demo',
-      home: Scaffold(
-        body: ListView(
-          children: [
-            Appbar(),
-            ImageSection(),
-            TitleSection(),
-            ButtonSection(),
-            TextSection()
-          ],
-        )
-      ),
-    );
+    return ChangeNotifierProvider(
+        create: (context) => MyAppState(),
+        child: MaterialApp(
+          title: 'Flutter layout demo',
+          home: AppLayout(),
+        ));
   }
 }
 
-class TitleSection extends StatelessWidget {
-  const TitleSection({super.key});
+class MyAppState extends ChangeNotifier {
+  var expanded = true;
+
+  void toggleExpand() {
+    print(expanded);
+    expanded = !expanded;
+    notifyListeners();
+  }
+}
+
+class AppLayout extends StatefulWidget {
+  const AppLayout({super.key});
+
+  @override
+  State<AppLayout> createState() => _AppLayoutState();
+}
+
+class _AppLayoutState extends State<AppLayout> {
+  var selectedMenu = 0;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-      child: Row(
+    var appState = context.watch<MyAppState>();
+    var expanded = appState.expanded;
+    Widget page;
+    switch (selectedMenu) {
+      case 0:
+        page = LayoutDemo();
+        break;
+      default:
+        throw UnimplementedError('no widget for $selectedMenu');
+    }
+    return LayoutBuilder(builder: (context, constrains) {
+      return Scaffold(
+          body: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
+          CustomAppbar(),
           Expanded(
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Container(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: const Text('Oeschinen Lake Campground',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-              ),
-              Text('Kandersteg, Switzerland',
-                  style: TextStyle(color: Colors.grey[500]))
-            ]),
-          ),
-          Icon(
-            Icons.star,
-            color: Colors.red[500],
-          ),
-          const Text('41')
+              child: Row(
+            children: [
+              SafeArea(
+                  child: NavigationRail(
+                extended: expanded,
+                destinations: [
+                  NavigationRailDestination(
+                      icon: Icon(Icons.home_outlined),
+                      label: Text("Layout demo")),
+                  NavigationRailDestination(
+                      icon: Icon(Icons.text_snippet), label: Text("Words")),
+                  NavigationRailDestination(
+                      icon: Icon(Icons.favorite),
+                      label: Text("Favorite words")),
+                ],
+                trailing: Expanded(
+                    child: Align(
+                        alignment: Alignment.bottomLeft,
+                        child: TextButton(
+                            onPressed: () {
+                              appState.toggleExpand();
+                            },
+                            child: Icon(Icons.menu)))),
+                selectedIndex: selectedMenu,
+                onDestinationSelected: (value) => {
+                  setState(() {
+                    selectedMenu = value;
+                  })
+                },
+              )),
+              Expanded(
+                  child: Container(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      child: page)),
+            ],
+          ))
         ],
-      ),
-    );
+      ));
+    });
   }
 }
-
-class ButtonSection extends StatelessWidget {
-  const ButtonSection({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    Color color = Theme.of(context).primaryColor;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        _buildButtonColumn(color, Icons.call, 'CALL'),
-        _buildButtonColumn(color, Icons.near_me, 'ROUTE'),
-        _buildButtonColumn(color, Icons.share, 'SHARE')
-      ],
-    );
-  }
-
-  Column _buildButtonColumn(Color color, IconData icon, String label) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, color: color),
-        Container(
-            margin: const EdgeInsets.only(top: 8),
-            child: Text(label,
-                style: TextStyle(
-                    fontSize: 12, fontWeight: FontWeight.w400, color: color)))
-      ],
-    );
-  }
-}
-
-class TextSection extends StatelessWidget {
-  const TextSection({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(32),
-      child: Text(
-        'Lake Oeschinen lies at the foot of the Blüemlisalp in the Bernese '
-        'Alps. Situated 1,578 meters above sea level, it is one of the '
-        'larger Alpine Lakes. A gondola ride from Kandersteg, followed by a '
-        'half-hour walk through pastures and pine forest, leads you to the '
-        'lake, which warms to 20 degrees Celsius in the summer. Activities '
-        'enjoyed here include rowing, and riding the summer toboggan run.',
-        softWrap: true,
-      ),
-    );
-  }
-}
-
-class ImageSection extends StatelessWidget {
-  const ImageSection({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Image.asset('images/lake.jpg',
-        width: 600, height: 240, fit: BoxFit.cover);
-  }
-}
-
 
 const sidebarColor = Color(0xFFF6A00C);
 
@@ -156,9 +132,8 @@ final closeButtonColors = WindowButtonColors(
     iconNormal: const Color(0xFF805306),
     iconMouseOver: Colors.white);
 
-
-class Appbar extends StatelessWidget {
-  const Appbar({super.key});
+class CustomAppbar extends StatelessWidget {
+  const CustomAppbar({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -168,9 +143,12 @@ class Appbar extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: WindowTitleBarBox(child: MoveWindow(
-              child: Center(child: Text("Test Flutter"),)
-            ),),
+            child: WindowTitleBarBox(
+              child: MoveWindow(
+                  child: Center(
+                child: Text("Test Flutter"),
+              )),
+            ),
           ),
           MinimizeWindowButton(colors: buttonColors),
           MaximizeWindowButton(colors: buttonColors),
