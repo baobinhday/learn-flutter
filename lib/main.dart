@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter_app/features/layout_demo/layout_demo.dart';
+import 'package:flutter_app/features/tv_remote/tv_remote.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -37,7 +38,6 @@ class MyAppState extends ChangeNotifier {
   var expanded = true;
 
   void toggleExpand() {
-    print(expanded);
     expanded = !expanded;
     notifyListeners();
   }
@@ -61,6 +61,9 @@ class _AppLayoutState extends State<AppLayout> {
     switch (selectedMenu) {
       case 0:
         page = LayoutDemo();
+        break;
+      case 3:
+        page =  TvRemote();
         break;
       default:
         throw UnimplementedError('no widget for $selectedMenu');
@@ -86,6 +89,8 @@ class _AppLayoutState extends State<AppLayout> {
                   NavigationRailDestination(
                       icon: Icon(Icons.favorite),
                       label: Text("Favorite words")),
+                  NavigationRailDestination(
+                      icon: Icon(Icons.control_camera), label: Text("Remote"))
                 ],
                 trailing: Expanded(
                     child: Align(
@@ -104,7 +109,7 @@ class _AppLayoutState extends State<AppLayout> {
               )),
               Expanded(
                   child: Container(
-                      color: Theme.of(context).colorScheme.primaryContainer,
+                      color: Colors.grey[100],
                       child: page)),
             ],
           ))
